@@ -9,7 +9,7 @@ public class Stemmer(List<string> docs)
     public string[] Tokenize()
     {
         string readText = "";
-        foreach ( string path in DocPaths )
+       foreach ( string path in DocPaths )
         readText += File.ReadAllText(path);
         string tempText = Regex.Replace(readText, @"[^\p{L}]", " ");
         var tokenizedList = tempText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
@@ -29,25 +29,27 @@ public class Stemmer(List<string> docs)
     }
     public List<List<string>> Stem()
     {
+        //tokenization,stop word removal,affix removal
         var stemmed = new List<string>();
         var tokens = Tokenize();
         string candidate = "";
         //removing stop words before stemming
-        List<string> Filteredtokens = RemoveStopWords(tokens);
+        List<string> filteredtokens = RemoveStopWords(tokens);
         Console.WriteLine("Stemming.....");
-        List<string> twoLetterWords=File.ReadAllText("./Documents/TwoLetterWords.txt")
+        List<string> twoLetterWords=File.ReadAllText(@"C:\Users\user\Documents\HiLCoE\4THYR2NDTM\CS485\GuragegnaInfoRetrSys\GuragegnaInfoRetrSys\Guragegna-Language-Stemmer--\Documents\TwoLetterWords.txt")
                 .Split(" ",StringSplitOptions.RemoveEmptyEntries).ToList();
 
 
-        foreach (var t in Filteredtokens)
+        foreach (var t in filteredtokens)
         {
+
             candidate = t;
             //context handling- keeping exceptions
             if(ContextHandling.Exceptions.Contains(candidate)){
                 stemmed.Add(candidate);
                 continue; 
             }
-            //handling reduplication
+            //handling duplication
                 candidate=ContextHandling.RemoveDuplication(candidate);
 
            
@@ -55,7 +57,7 @@ public class Stemmer(List<string> docs)
             {
                 if (candidate.ToEnglishSyntax().StartsWith(p.ToEnglishSyntax()))
                 {
-                    //to handle false prefix identification cases like word ባናም(banam) and suffix ብ(b)
+                    //to handle false prefix identification cases like word ባናም(banam) and prefix ብ(b)
                     if(p.Length==1&&!(p[0]==candidate[0])){
                         continue;
                     }
@@ -65,13 +67,13 @@ public class Stemmer(List<string> docs)
                     }
                     //this serves as a general rule for avoiding overstemming into 2 letters
                     string temp = candidate[p.Length..];
-                    if((temp.Length!=2)||(temp.Length==2&&twoLetterWords.Contains(temp))){
+                    if((temp.Length>2)||(temp.Length==2&&twoLetterWords.Contains(temp))){
                         candidate=temp;
                     }
                 }
             }
 
-            foreach (var s in Affix.GetSuffixes().OrderBy(o => o.Length))
+            foreach (var s in Affix.GetSuffixes().OrderByDescending(o => o.Length))
             {
                 //Recoding rule- suffix 'ንዳ' should not be clipped 
                 if(s=="ንዳ"){
@@ -84,17 +86,17 @@ public class Stemmer(List<string> docs)
                         break;
                     }
 
-                string temp =  candidate[..^s.Length];
-                    if((temp.Length!=2)||(temp.Length==2&&twoLetterWords.Contains(temp))){
-                        candidate=temp;
-                    }
+                string temp =  candidate.ToEnglishSyntax()[..^s.ToEnglishSyntax().Length];
+                    if((temp.Length>2)||(temp.Length==2&&twoLetterWords.Contains(temp))){
+                        candidate=temp.ToGurage();
+                         }
                 }
             }
 
-            stemmed.Add(candidate.ToGurage());
+            stemmed.Add(candidate);
         }
 
-        return [stemmed,Filteredtokens];
+        return [stemmed,filteredtokens];
     }
 
     private void Normalize() { }

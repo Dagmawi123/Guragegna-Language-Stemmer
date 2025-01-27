@@ -85,5 +85,6 @@ public class StopWordList{
       "ቢኸር",
       "ወይ",
       "ምክንያትሞሀ",
+     "ምክንያት"
     ];
 }
