@@ -8,7 +8,7 @@ public static class AmhEngMap
 
     public static void Load()
     {
-        string filePath = @"C:\Users\user\Documents\HiLCoE\4THYR2NDTM\CS485\GuragegnaInfoRetrSys\GuragegnaInfoRetrSys\Guragegna-Language-Stemmer--\Transliteration\list_mod.json";
+        string filePath = "./list_mod.json";
 
         string jsonString = File.ReadAllText(filePath);
 

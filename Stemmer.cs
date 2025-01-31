@@ -2,42 +2,40 @@ using System.Text.RegularExpressions;
 using GuragegnaInfoRetrSys.Util;
 namespace GuragegnaInfoRetrSys;
 
-public class Stemmer(List<string> docs)
+public class Stemmer()
 {
-    public List<string> DocPaths { get; set; } = docs;
+    // public List<string> DocPaths { get; set; } = docs;
+    List<string> twoLetterWords = File.ReadAllText("./Documents/TwoLetterWords.txt")
+            .Split(" ", StringSplitOptions.RemoveEmptyEntries).ToList();
 
-    public string[] Tokenize()
+    public static List<string> Tokenize(string tempText)
     {
-        string readText = "";
-       foreach ( string path in DocPaths )
-        readText += File.ReadAllText(path);
-        string tempText = Regex.Replace(readText, @"[^\p{L}]", " ");
+
+        tempText = Regex.Replace(tempText, @"[^\p{L}]", " ");
         var tokenizedList = tempText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        return tokenizedList;
+        return tokenizedList.ToList();
     }
 
-    public List<string> RemoveStopWords(string[] tokens)
+    public List<string> RemoveStopWords(List<string> tokens)
     {
         List<string> filteredWords = new();
         foreach (var token in tokens)
         {
             filteredWords.Add(token);
-            if(StopWordList.StopWords.Contains(token))
-            filteredWords.Remove(token);
+            if (StopWordList.StopWords.Contains(token))
+                filteredWords.Remove(token);
         }
         return filteredWords;
     }
-    public List<List<string>> Stem()
+    public List<String> Stem(List<string> document)
     {
         //tokenization,stop word removal,affix removal
         var stemmed = new List<string>();
-        var tokens = Tokenize();
+        //var tokens = Tokenize();
         string candidate = "";
         //removing stop words before stemming
-        List<string> filteredtokens = RemoveStopWords(tokens);
-        Console.WriteLine("Stemming.....");
-        List<string> twoLetterWords=File.ReadAllText(@"C:\Users\user\Documents\HiLCoE\4THYR2NDTM\CS485\GuragegnaInfoRetrSys\GuragegnaInfoRetrSys\Guragegna-Language-Stemmer--\Documents\TwoLetterWords.txt")
-                .Split(" ",StringSplitOptions.RemoveEmptyEntries).ToList();
+        List<string> filteredtokens = RemoveStopWords(document);
+        // Console.WriteLine("Stemming.....");
 
 
         foreach (var t in filteredtokens)
@@ -45,30 +43,33 @@ public class Stemmer(List<string> docs)
 
             candidate = t;
             //context handling- keeping exceptions
-            if(ContextHandling.Exceptions.Contains(candidate)){
+            if (ContextHandling.Exceptions.Contains(candidate))
+            {
                 stemmed.Add(candidate);
-                continue; 
+                continue;
             }
             //handling duplication
-                candidate=ContextHandling.RemoveDuplication(candidate);
+            candidate = ContextHandling.RemoveDuplication(candidate);
 
-           
+
             foreach (var p in Affix.GetPrefixes().OrderBy(o => o.Length))
             {
                 if (candidate.ToEnglishSyntax().StartsWith(p.ToEnglishSyntax()))
                 {
                     //to handle false prefix identification cases like word ባናም(banam) and prefix ብ(b)
-                    if(p.Length==1&&!(p[0]==candidate[0])){
+                    if (p.Length == 1 && !(p[0] == candidate[0]))
+                    {
                         continue;
                     }
-                    if (candidate.Length <3)
+                    if (candidate.Length < 3)
                     {
                         break;
                     }
                     //this serves as a general rule for avoiding overstemming into 2 letters
                     string temp = candidate[p.Length..];
-                    if((temp.Length>2)||(temp.Length==2&&twoLetterWords.Contains(temp))){
-                        candidate=temp;
+                    if ((temp.Length > 2) || (temp.Length == 2 && twoLetterWords.Contains(temp)))
+                    {
+                        candidate = temp;
                     }
                 }
             }
@@ -76,27 +77,29 @@ public class Stemmer(List<string> docs)
             foreach (var s in Affix.GetSuffixes().OrderByDescending(o => o.Length))
             {
                 //Recoding rule- suffix 'ንዳ' should not be clipped 
-                if(s=="ንዳ"){
+                if (s == "ንዳ")
+                {
                     continue;
                 }
                 if (candidate.ToEnglishSyntax().EndsWith(s.ToEnglishSyntax()))
                 {
-                    if (candidate.Length <3)
+                    if (candidate.Length < 3)
                     {
                         break;
                     }
 
-                string temp =  candidate.ToEnglishSyntax()[..^s.ToEnglishSyntax().Length];
-                    if((temp.Length>2)||(temp.Length==2&&twoLetterWords.Contains(temp))){
-                        candidate=temp.ToGurage();
-                         }
+                    string temp = candidate.ToEnglishSyntax()[..^s.ToEnglishSyntax().Length];
+                    if ((temp.Length > 2) || (temp.Length == 2 && twoLetterWords.Contains(temp)))
+                    {
+                        candidate = temp.ToGurage();
+                    }
                 }
             }
 
             stemmed.Add(candidate);
         }
 
-        return [stemmed,filteredtokens];
+        return stemmed;
     }
 
     private void Normalize() { }

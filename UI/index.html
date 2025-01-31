@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Search Page</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Gurage search</h1>
+        <form id="searchForm">
+            <input type="text" id="searchInput" placeholder="Search your Gurage docs.." autofocus>
+            <button type="submit">Search</button>
+        </form>
+        <div id="resultsArea">
+            <!-- Search results will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        // Example JavaScript to handle form submission
+        document.getElementById('searchForm').addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent form submission
+            const query = document.getElementById('searchInput').value;
+            const resultsArea = document.getElementById('resultsArea');
+
+            // Simulate search results
+            resultsArea.innerHTML = `<p>You searched for: <strong>${query}</strong></p>`;
+        });
+    </script>
+</body>
+</html>
